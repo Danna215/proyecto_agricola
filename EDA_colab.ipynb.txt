@@ -1,0 +1,376 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "collapsed_sections": [
+        "2CjczAqzdj7x"
+      ]
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 🤖 Uso de IA en el proyecto\n",
+        "\n",
+        "Durante el desarrollo de este proyecto se usó un asistente de IA como apoyo para estructurar el flujo de trabajo, generar ejemplos de código y mejorar las explicaciones.  \n",
+        "\n",
+        "Algunos de los **prompts utilizados** fueron:\n",
+        "\n",
+        "1. *\"Actúa como un científico de datos. Mi DataFrame de pandas podría tener valores nulos. ¿Cuáles son las estrategias más comunes para manejarlos? Dame el código para verificar cuántos nulos hay por columna y luego para eliminarlos.\"*  \n",
+        "\n",
+        "2. *\"Explícame cómo interpretar el resultado de `df.info()` en pandas y qué conclusiones se pueden sacar sobre la calidad de los datos.\"*  \n",
+        "\n",
+        "3. *\"Dame ejemplos de gráficos en Seaborn y Matplotlib para visualizar la distribución de variables y detectar outliers.\"*  \n",
+        "\n",
+        "4. *\"Enséñame cómo crear una aplicación básica en Streamlit con un menú lateral y gráficos interactivos.\"*  \n",
+        "\n",
+        "Estos prompts fueron usados como **guía inicial**. Posteriormente, el código fue adaptado, corregido y documentado para ajustarse al proyecto de Ingeniería Agrícola.  \n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "BQ0SKuK2bjLw"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/drive')"
+      ],
+      "metadata": {
+        "id": "nHoJOCgQb1fN"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Conexión con Google Drive\n",
+        "Montamos Google Drive para acceder a la carpeta del proyecto `proyecto_agricola/`.  \n",
+        "Esto nos permite trabajar de forma organizada, guardando tanto el dataset como el notebook en la misma estructura de carpetas."
+      ],
+      "metadata": {
+        "id": "x1fRB7MJb4UP"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import seaborn as sns\n",
+        "import matplotlib.pyplot as plt\n",
+        "import plotly.express as px"
+      ],
+      "metadata": {
+        "id": "KCThWcTvcNbD"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Librerías utilizadas\n",
+        "- **pandas:** manejo de datos en formato tabla (DataFrames).  \n",
+        "- **seaborn y matplotlib:** visualización de datos estáticos.  \n",
+        "- **plotly:** visualización interactiva en 3D."
+      ],
+      "metadata": {
+        "id": "aHrAiPdrcPRP"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df = pd.read_csv(\"/content/drive/MyDrive/Proyectó Agrícola /Crop_recommendation.csv\")\n",
+        "df.head()"
+      ],
+      "metadata": {
+        "id": "BIrBztn_cT2H"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Carga del dataset\n",
+        "Se cargó el archivo `Crop_recommendation.csv` desde la carpeta `data/`.  \n",
+        "El comando `df.head()` muestra las **primeras 5 filas** del dataset, lo que nos permite verificar:  \n",
+        "- Que las columnas tienen nombres correctos (`N`, `P`, `K`, `temperature`, `humidity`, `ph`, `rainfall`, `label`).  \n",
+        "- Que los valores son coherentes (ej: pH entre 5 y 8, lluvia alrededor de 100–200 mm)."
+      ],
+      "metadata": {
+        "id": "6Xo1cIWFc6Br"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.info ()"
+      ],
+      "metadata": {
+        "id": "w5vSRB_sdEbO"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Análisis de `df.info()`\n",
+        "- El dataset contiene **2200 registros (filas)** y **8 columnas**.  \n",
+        "- Todas las columnas tienen `2200 non-null`, por lo tanto **no existen valores faltantes**.  \n",
+        "- **Tipos de datos:**  \n",
+        "  - `int64`: nutrientes N, P, K.  \n",
+        "  - `float64`: temperatura, humedad, pH, lluvia.  \n",
+        "  - `object`: cultivo (`label`).  \n",
+        "- El dataset es **ligero (~137 KB)** y no requiere tratamiento de nulos."
+      ],
+      "metadata": {
+        "id": "KxjYkAJ-dJhv"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.describe()"
+      ],
+      "metadata": {
+        "id": "Vkkikq26dbmj"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Estadísticas descriptivas (`df.describe()`)\n",
+        "- **Promedio:** Temperatura ~25.6 °C, humedad ~71%, pH ~6.4 (ligeramente ácido).  \n",
+        "- **Mínimos y máximos:**  \n",
+        "  - Temperatura: 8.8 °C – 43.6 °C.  \n",
+        "  - pH: 3.5 – 9.9 (hay algunos valores extremos).  \n",
+        "  - Lluvia: 20 – 298 mm.  \n",
+        "- **Percentiles:** permiten analizar la distribución de cada variable.  \n",
+        "Con esto confirmamos que los valores son **realistas**, aunque con algunos extremos en pH y lluvia."
+      ],
+      "metadata": {
+        "id": "2CjczAqzdj7x"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df['label'].value_counts()"
+      ],
+      "metadata": {
+        "id": "GSi9xl3-dv8A"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Distribución de cultivos (`label`)\n",
+        "Este comando cuenta cuántas veces aparece cada cultivo en el dataset.  \n",
+        "Se confirma que todos los cultivos tienen un número equilibrado de registros (~100 cada uno).  \n",
+        "Esto es importante porque evita **sesgos en el análisis**."
+      ],
+      "metadata": {
+        "id": "LoMxiNf4d1io"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.describe(include='object')"
+      ],
+      "metadata": {
+        "id": "Nmw3zYh2eEWR"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Estadísticas de variables categóricas\n",
+        "Aquí vemos:  \n",
+        "- Número de categorías únicas (`unique`).  \n",
+        "- Categoría más frecuente (`top`).  \n",
+        "- Frecuencia de la categoría más común (`freq`).  \n",
+        "\n",
+        "En `label`, hay 22 cultivos distintos y ninguno domina excesivamente el dataset."
+      ],
+      "metadata": {
+        "id": "mJZD29AweIwE"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Número de filas:\", df.shape[0])\n",
+        "print(\"Número de columnas:\", df.shape[1])"
+      ],
+      "metadata": {
+        "id": "jT0xmXs9eQTG"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Dimensiones del dataset\n",
+        "- **Filas:** 2200 registros.  \n",
+        "- **Columnas:** 8 variables.  \n",
+        "Esto confirma el tamaño total de la base de datos."
+      ],
+      "metadata": {
+        "id": "Ze8u8wwueVB2"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.sample(10)"
+      ],
+      "metadata": {
+        "id": "zr_enuASea13"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Muestra aleatoria de registros\n",
+        "`df.sample(10)` muestra 10 filas seleccionadas al azar.  \n",
+        "Esto ayuda a verificar la coherencia de los datos en diferentes partes del dataset."
+      ],
+      "metadata": {
+        "id": "CUHhE0qbefoE"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "bins = [0, 60, 120, float('inf')]\n",
+        "labels = ['Baja', 'Media', 'Alta']\n",
+        "df['rainfall_level'] = pd.cut(df['rainfall'], bins=bins, labels=labels, right=False)\n",
+        "df[['rainfall', 'rainfall_level']].head(10)"
+      ],
+      "metadata": {
+        "id": "qXxp2Jdrek0A"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Feature Engineering: niveles de lluvia\n",
+        "Se creó una nueva variable categórica `rainfall_level` que clasifica la lluvia en:  \n",
+        "- **Baja:** <60 mm  \n",
+        "- **Media:** 60–120 mm  \n",
+        "- **Alta:** >120 mm  \n",
+        "\n",
+        "Esto permite realizar análisis comparativos más fáciles, por ejemplo boxplots de temperatura según nivel de lluvia."
+      ],
+      "metadata": {
+        "id": "8XLVCD3VeoiM"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sns.histplot(df['ph'], kde=True, bins=20, color=\"green\")\n",
+        "plt.title(\"Distribución del pH del suelo\")\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "zZl0jb4seuHU"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sns.boxplot(y=df['temperature'])\n",
+        "plt.title(\"Boxplot de la Temperatura\")\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "apugk8THe2q9"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "sns.regplot(x='K', y='P', data=df, scatter_kws={'alpha':0.5}, line_kws={'color':'red'})\n",
+        "plt.title(\"Relación entre K y P\")\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "AcAD2qO7e5W7"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "corr = df.corr(numeric_only=True)\n",
+        "sns.heatmap(corr, annot=True, cmap=\"coolwarm\")\n",
+        "plt.title(\"Mapa de correlación\")\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "tJ-teHrAe8ZU"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "fig = px.scatter_3d(df, x=\"N\", y=\"P\", z=\"K\", color=\"label\", title=\"Relación N-P-K por cultivo\")\n",
+        "fig.show()"
+      ],
+      "metadata": {
+        "id": "QfZd6ymKfAu2"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Visualizaciones exploratorias\n",
+        "- **Histograma:** distribución del pH → la mayoría de los suelos están entre 5.5 y 7.5.  \n",
+        "- **Boxplot:** permite identificar outliers en temperatura y otras variables.  \n",
+        "- **Scatter:** muestra la relación entre nutrientes, con línea de tendencia.  \n",
+        "- **Mapa de calor:** revela correlaciones fuertes (ej: humedad y lluvia).  \n",
+        "- **Gráfico 3D (Plotly):** exploración interactiva de nutrientes N, P y K por cultivo."
+      ],
+      "metadata": {
+        "id": "8myWqrtCfEFG"
+      }
+    }
+  ]
+}
